@@ -6,21 +6,21 @@
       "number": "01",
       "title": "Ocean Freight Shipping",
       "description": "Full container load (FCL) and less than container load (LCL) global maritime shipping solutions with real-time port tracking.",
-      "image": "/src/assets/cargo_ship.png"
+      "image": "/cargo_ship.png"
     },
     {
       "id": "cargo_truck",
       "number": "02",
       "title": "Road Freight Transport",
       "description": "Comprehensive overland logistics and fleet dispatch offering climate-controlled freight transport across major interstate corridors.",
-      "image": "/src/assets/cargo_truck.png"
+      "image": "/cargo_truck.png"
     },
     {
       "id": "air_freight",
       "number": "03",
       "title": "Air Freight Logistics",
       "description": "Express international air cargo transportation with expedited customs clearance and guaranteed time-critical delivery windows.",
-      "image": "/src/assets/air_freight.png"
+      "image": "/air_freight.png"
     }
   ]
 }
