@@ -18,11 +18,15 @@ const JWT_SECRET = 'logicore_admin_super_secret_jwt_key_2026'
 const dataDir = path.join(__dirname, 'data')
 const uploadsDir = path.join(__dirname, 'public', 'uploads')
 
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true })
-}
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true })
+try {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true })
+  }
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true })
+  }
+} catch (error) {
+  console.log('Skipping directory creation on Vercel read-only filesystem')
 }
 
 app.use(cors())
