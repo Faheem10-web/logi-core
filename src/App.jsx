@@ -605,7 +605,6 @@ function App() {
           <div className="footer-legal-links">
             <a href="#terms">Terms &amp; Condition</a>
             <a href="#privacy">Privacy Policy</a>
-            <a href="#admin" onClick={(e) => { e.preventDefault(); setIsAdminOpen(true); }}>🔒 Admin Panel</a>
           </div>
 
           <div className="footer-social-icons">
