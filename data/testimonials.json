@@ -1,0 +1,28 @@
+{
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "David Harrison",
+      "position": "VP of Supply Chain, TransGlobal Corp",
+      "photo": "/src/assets/avatar1.png",
+      "headline": "LOGICORE reduced our overseas transit delays by 40% with zero lost shipments.",
+      "review": "Working with LOGICORE transformed our international cargo distribution. Their real-time freight monitoring gave our team total confidence in time-critical deliveries."
+    },
+    {
+      "id": 2,
+      "name": "Sarah Jenkins",
+      "position": "Director of Logistics, Apex Retail Ltd",
+      "photo": "/src/assets/avatar2.png",
+      "headline": "Exceptional customer support and seamless ocean container tracking.",
+      "review": "LOGICORE's dedicated account managers handle our customs documentation effortlessly. We have scaled our shipping volume across 12 countries smoothly."
+    },
+    {
+      "id": 3,
+      "name": "Michael Vance",
+      "position": "Operations Lead, EuroFreight Systems",
+      "photo": "/src/assets/avatar3.png",
+      "headline": "The fastest air freight logistics provider we have ever partnered with.",
+      "review": "Time-sensitive aircraft components were delivered ahead of schedule. LOGICORE is our go-to logistics partner for global operations."
+    }
+  ]
+}

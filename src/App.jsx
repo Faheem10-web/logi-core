@@ -10,6 +10,11 @@ import avatar3Img from './assets/avatar3.png'
 import footerBg from './assets/footer_bg.png'
 import deliveryCourierImg from './assets/delivery_courier.png'
 import './App.css'
+import './Admin.css'
+import { AdminLogin } from './components/AdminLogin'
+import { AdminPanel } from './components/AdminPanel'
+import { CookieConsent } from './components/common/CookieConsent'
+
 
 // High Performance Count-Up Animated Number Component
 function CounterNumber({ end, prefix = '', suffix = '', decimals = 0, duration = 1800 }) {
@@ -116,6 +121,77 @@ function App() {
     company: false,
     contact: false,
   })
+
+  // Admin Panel Integration State
+  const [isAdminOpen, setIsAdminOpen] = useState(
+    window.location.hash === '#admin' || window.location.pathname.endsWith('/admin')
+  )
+  const [authToken, setAuthToken] = useState(
+    localStorage.getItem('logicore_admin_token') || sessionStorage.getItem('logicore_admin_token') || null
+  )
+
+  // Live dynamic JSON states fetched from Express Backend API
+  const [siteHero, setSiteHero] = useState(null)
+  const [siteAbout, setSiteAbout] = useState(null)
+  const [siteServices, setSiteServices] = useState(null)
+  const [siteTestimonials, setSiteTestimonials] = useState(null)
+  const [siteContact, setSiteContact] = useState(null)
+  const [siteSettings, setSiteSettings] = useState(null)
+
+  // Listen to URL changes for #admin or /admin
+  useEffect(() => {
+    const handleUrlCheck = () => {
+      if (window.location.hash === '#admin' || window.location.pathname.endsWith('/admin')) {
+        setIsAdminOpen(true)
+      }
+    }
+    handleUrlCheck()
+    window.addEventListener('hashchange', handleUrlCheck)
+    window.addEventListener('popstate', handleUrlCheck)
+    return () => {
+      window.removeEventListener('hashchange', handleUrlCheck)
+      window.removeEventListener('popstate', handleUrlCheck)
+    }
+  }, [])
+
+  // Timestamp state for zero-cache 100% instant image re-rendering
+  const [lastUpdateTs, setLastUpdateTs] = useState(Date.now())
+
+  // Cache bust image URL helper
+  const cacheBust = (url) => {
+    if (!url) return ''
+    const baseUrl = url.split('?v=')[0].split('&v=')[0]
+    return baseUrl.includes('?') ? `${baseUrl}&v=${lastUpdateTs}` : `${baseUrl}?v=${lastUpdateTs}`
+  }
+
+  // Fetch live website JSON data from server API with no-store headers
+  const fetchLiveSiteData = async () => {
+    try {
+      const ts = Date.now()
+      const [hRes, aRes, sRes, tRes, cRes, setRes] = await Promise.all([
+        fetch(`/api/hero?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/about?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/services?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/testimonials?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/contact?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/settings?t=${ts}`, { cache: 'no-store' }),
+      ])
+      if (hRes.ok) setSiteHero(await hRes.json())
+      if (aRes.ok) setSiteAbout(await aRes.json())
+      if (sRes.ok) setSiteServices(await sRes.json())
+      if (tRes.ok) setSiteTestimonials(await tRes.json())
+      if (cRes.ok) setSiteContact(await cRes.json())
+      if (setRes.ok) setSiteSettings(await setRes.json())
+
+      setLastUpdateTs(ts)
+    } catch (e) {
+      console.log('Using default static site data (API offline or initializing)')
+    }
+  }
+
+  useEffect(() => {
+    fetchLiveSiteData()
+  }, [])
 
   const toggleFooterCol = (col) => {
     setOpenFooterCol((prev) => ({
@@ -296,7 +372,12 @@ function App() {
           <nav className="navbar" aria-label="Main Navigation">
             {/* LOGICORE Brand */}
             <a href="#" className="brand-container" onClick={(e) => { e.preventDefault(); handleNavClick('Home'); }}>
-              <img src="/logo.png" alt="LOGICORE Logo" className="brand-logo-img" />
+              <img
+                key={`nav-logo-${lastUpdateTs}`}
+                src={cacheBust(siteSettings?.logo || '/logo.png')}
+                alt="LOGICORE Logo"
+                className="brand-logo-img"
+              />
             </a>
 
             {/* Desktop Navigation Links */}
@@ -426,7 +507,12 @@ function App() {
             {/* Column 1: LOGICORE Brand & Newsletter */}
             <div className="footer-col brand-col">
               <a href="#" className="brand-container" onClick={(e) => { e.preventDefault(); handleNavClick('Home'); }}>
-                <img src="/logo.png" alt="LOGICORE Logo" className="brand-logo-img" />
+                <img
+                  key={`footer-logo-${lastUpdateTs}`}
+                  src={cacheBust(siteSettings?.logo || '/logo.png')}
+                  alt="LOGICORE Logo"
+                  className="brand-logo-img"
+                />
               </a>
 
               <p className="footer-col-desc">
@@ -513,12 +599,13 @@ function App() {
         {/* Bottom Copyright Row */}
         <div className="footer-bottom-row">
           <p className="copyright-text">
-            © Copyright Reserved by LOGICORE 2026
+            {siteSettings?.copyright || '© Copyright Reserved by LOGICORE 2026'}
           </p>
 
           <div className="footer-legal-links">
             <a href="#terms">Terms &amp; Condition</a>
             <a href="#privacy">Privacy Policy</a>
+            <a href="#admin" onClick={(e) => { e.preventDefault(); setIsAdminOpen(true); }}>🔒 Admin Panel</a>
           </div>
 
           <div className="footer-social-icons">
@@ -556,7 +643,13 @@ function App() {
           /* CONTACT PAGE ROUTE */
           <div className="contact-page-wrapper">
             {/* CONTACT HERO BANNER */}
-            <section className="contact-page-hero">
+            <section
+              className="contact-page-hero"
+              key={`contact-hero-${lastUpdateTs}`}
+              style={{
+                backgroundImage: `url(${cacheBust(siteContact?.bannerImage || 'https://cdn.prod.website-files.com/69b2a15200bc2cb1d23ead7e/69b2a15200bc2cb1d23eb0f6_About-one-banner-main-p-2000.avif')})`,
+              }}
+            >
               <div className="contact-hero-overlay" />
 
               <div className="contact-hero-container hero-fade-up">
@@ -595,7 +688,7 @@ function App() {
                               <polyline points="22,6 12,13 2,6" />
                             </svg>
                           </span>
-                          <span>info.logicore@gmail.com</span>
+                          <span>{siteContact?.email || 'info.logicore@gmail.com'}</span>
                         </li>
                         <li>
                           <span className="contact-icon">
@@ -604,7 +697,7 @@ function App() {
                               <circle cx="12" cy="10" r="3" />
                             </svg>
                           </span>
-                          <span>130/B Global Trade Market, The Grand Avenue, Liverpool, UK 33342</span>
+                          <span>{siteContact?.address || '130/B Global Trade Market, New York, USA'}</span>
                         </li>
                         <li>
                           <span className="contact-icon">
@@ -612,7 +705,7 @@ function App() {
                               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                             </svg>
                           </span>
-                          <span>+1123-456-3389</span>
+                          <span>{siteContact?.phone || '+880 (1234) 5678'}</span>
                         </li>
                       </ul>
                     </div>
@@ -654,7 +747,13 @@ function App() {
           /* SERVICES PAGE ROUTE */
           <div className="services-page-wrapper">
             {/* SERVICES HERO BANNER */}
-            <section className="services-page-hero">
+            <section
+              className="services-page-hero"
+              key={`services-hero-${lastUpdateTs}`}
+              style={{
+                backgroundImage: `url(${cacheBust(siteServices?.bannerImage || 'https://cdn.prod.website-files.com/69b2a15200bc2cb1d23ead7e/69b2a15200bc2cb1d23eb0f6_About-one-banner-main-p-2000.avif')})`,
+              }}
+            >
               <div className="services-hero-overlay" />
 
               <div className="services-hero-container hero-fade-up">
@@ -690,7 +789,12 @@ function App() {
                   <ScrollReveal delay={100}>
                     <div className="service-split-item">
                       <div className="service-split-image-wrapper">
-                        <img src={cargoShipImg} alt="Ocean Freight Solutions" className="service-split-img" />
+                        <img
+                          key={`srv-01-${lastUpdateTs}`}
+                          src={cacheBust(siteServices?.services?.[0]?.image || cargoShipImg)}
+                          alt={siteServices?.services?.[0]?.title || "Ocean Freight Solutions"}
+                          className="service-split-img"
+                        />
                       </div>
 
                       <button className="split-action-arrow-btn" aria-label="View Ocean Freight details">
@@ -708,8 +812,12 @@ function App() {
                         </div>
 
                         <h3 className="split-card-title">
-                          OCEAN FREIGHT <br />
-                          SOLUTIONS
+                          {siteServices?.services?.[0]?.title || (
+                            <>
+                              OCEAN FREIGHT <br />
+                              SOLUTIONS
+                            </>
+                          )}
                         </h3>
 
                         <div className="split-card-divider" />
@@ -717,7 +825,7 @@ function App() {
                         <ul className="split-checklist">
                           <li>
                             <span className="check-icon-circle">✓</span>
-                            <span>Secure International Container Shipping</span>
+                            <span>{siteServices?.services?.[0]?.description || 'Secure International Container Shipping'}</span>
                           </li>
                           <li>
                             <span className="check-icon-circle">✓</span>
@@ -738,8 +846,12 @@ function App() {
                         </div>
 
                         <h3 className="split-card-title">
-                          GLOBAL FREIGHT <br />
-                          FORWARDING
+                          {siteServices?.services?.[1]?.title || (
+                            <>
+                              GLOBAL FREIGHT <br />
+                              FORWARDING
+                            </>
+                          )}
                         </h3>
 
                         <div className="split-card-divider" />
@@ -747,7 +859,7 @@ function App() {
                         <ul className="split-checklist">
                           <li>
                             <span className="check-icon-circle">✓</span>
-                            <span>Worldwide Shipping Coordination</span>
+                            <span>{siteServices?.services?.[1]?.description || 'Worldwide Shipping Coordination'}</span>
                           </li>
                           <li>
                             <span className="check-icon-circle">✓</span>
@@ -765,7 +877,12 @@ function App() {
                       </button>
 
                       <div className="service-split-image-wrapper">
-                        <img src={cargoTruckImg} alt="Global Freight Forwarding" className="service-split-img" />
+                        <img
+                          key={`srv-02-${lastUpdateTs}`}
+                          src={cacheBust(siteServices?.services?.[1]?.image || cargoTruckImg)}
+                          alt={siteServices?.services?.[1]?.title || "Global Freight Forwarding"}
+                          className="service-split-img"
+                        />
                       </div>
                     </div>
                   </ScrollReveal>
@@ -774,7 +891,12 @@ function App() {
                   <ScrollReveal delay={300}>
                     <div className="service-split-item">
                       <div className="service-split-image-wrapper">
-                        <img src={deliveryCourierImg} alt="Express Cargo Delivery" className="service-split-img" />
+                        <img
+                          key={`srv-03-${lastUpdateTs}`}
+                          src={cacheBust(siteServices?.services?.[2]?.image || airFreightImg)}
+                          alt={siteServices?.services?.[2]?.title || "Express Cargo Delivery"}
+                          className="service-split-img"
+                        />
                       </div>
 
                       <button className="split-action-arrow-btn" aria-label="View Express Cargo Delivery details">
@@ -822,7 +944,13 @@ function App() {
           /* ABOUT PAGE ROUTE */
           <div className="about-page-wrapper">
             {/* ABOUT HERO BANNER */}
-            <section className="about-hero-section">
+            <section
+              className="about-hero-section"
+              key={`about-hero-${lastUpdateTs}`}
+              style={{
+                backgroundImage: `url(${cacheBust(siteAbout?.bannerImage || 'https://cdn.prod.website-files.com/69b2a15200bc2cb1d23ead7e/69b2a15200bc2cb1d23eb0f6_About-one-banner-main-p-2000.avif')})`,
+              }}
+            >
               <div className="about-hero-overlay" />
 
               <div className="about-hero-container hero-fade-up">
@@ -988,13 +1116,14 @@ function App() {
             <section className="hero-container">
               {/* Background Slider Container */}
               <div className="hero-slider-bg-wrapper">
-                {heroImages.map((imgUrl, idx) => (
+                {(siteHero?.images?.length ? siteHero.images : heroImages).map((imgUrl, idx) => (
                   <div
-                    key={imgUrl}
+                    key={`${imgUrl}-${idx}-${lastUpdateTs}`}
                     className={`hero-slide-bg ${idx === heroSlideIndex ? 'active' : ''}`}
                   >
                     <img
-                      src={imgUrl}
+                      key={`${imgUrl}-${lastUpdateTs}`}
+                      src={cacheBust(imgUrl)}
                       alt={`Hero Logistics Background ${idx + 1}`}
                       className="hero-slide-img"
                       loading={idx === 0 ? 'eager' : 'lazy'}
@@ -1004,14 +1133,19 @@ function App() {
               </div>
 
               {/* Unified Dark Gradient Overlay */}
-              <div className="hero-overlay" />
+              <div
+                className="hero-overlay"
+                style={{
+                  background: `linear-gradient(rgba(5, 12, 24, ${siteHero?.overlayOpacity ?? 0.65}), rgba(5, 12, 24, ${siteHero?.overlayOpacity ?? 0.65}))`,
+                }}
+              />
 
               <main className="hero-content hero-fade-up">
                 <h1 className="hero-headline">
-                  Welcome to LOGICORE
+                  {siteHero?.heading || 'Welcome to LOGICORE'}
                 </h1>
                 <p className="hero-subtitle">
-                  Your trusted partner for global shipping solutions. We make international shipping simple and stress-free.
+                  {siteHero?.subtitle || 'Your trusted partner for global shipping solutions. We make international shipping simple and stress-free.'}
                 </p>
               </main>
 
@@ -1024,19 +1158,26 @@ function App() {
                 <ScrollReveal>
                   <div className="overview-grid">
                     <div className="overview-image-wrapper image-left">
-                      <img src={cargoShipImg} alt="Cargo Container Ship at Sunset" className="overview-img" />
+                      <img
+                        key={`about-img-${lastUpdateTs}`}
+                        src={cacheBust(siteAbout?.aboutImage || cargoShipImg)}
+                        alt="Company Overview Photo"
+                        className="overview-img"
+                      />
                     </div>
 
                     <div className="overview-center">
                       <span className="badge-pill">COMPANY OVERVIEW</span>
                       <h2 className="overview-title">
-                        DATA-DRIVEN LOGISTIC <br />
-                        GLOBAL <span className="text-highlight">NETWORK</span>
+                        {siteAbout?.heading || (
+                          <>
+                            DATA-DRIVEN LOGISTIC <br />
+                            GLOBAL <span className="text-highlight">NETWORK</span>
+                          </>
+                        )}
                       </h2>
                       <p className="overview-description">
-                        Transforming logistics through innovation. We leverage cross-unit synergy 
-                        and reliable technology to deliver frictionless shipping services, 
-                        focusing on high-impact solutions that drive your business forward.
+                        {siteAbout?.description || 'Transforming logistics through innovation. We leverage cross-unit synergy and reliable technology to deliver frictionless shipping services, focusing on high-impact solutions that drive your business forward.'}
                       </p>
                       <a href="#about" className="overview-cta-btn" onClick={(e) => { e.preventDefault(); handleNavClick('About'); }}>
                         <span>More About Us</span>
@@ -1049,7 +1190,12 @@ function App() {
                     </div>
 
                     <div className="overview-image-wrapper image-right">
-                      <img src={cargoTruckImg} alt="Logistics Semi Truck at Port" className="overview-img" />
+                      <img
+                        key={`detail-img-${lastUpdateTs}`}
+                        src={cacheBust(siteAbout?.detailImage || cargoTruckImg)}
+                        alt="Logistics Fleet Photo"
+                        className="overview-img"
+                      />
                     </div>
                   </div>
                 </ScrollReveal>
@@ -1266,6 +1412,23 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* ADMIN PANEL & LOGIN MODAL OVERLAY */}
+      {isAdminOpen && (!authToken ? (
+        <AdminLogin onLoginSuccess={(token) => setAuthToken(token)} />
+      ) : (
+        <AdminPanel
+          token={authToken}
+          onLogout={() => {
+            setAuthToken(null)
+            localStorage.removeItem('logicore_admin_token')
+            sessionStorage.removeItem('logicore_admin_token')
+          }}
+          onDataUpdated={fetchLiveSiteData}
+          onCloseAdmin={() => setIsAdminOpen(false)}
+        />
+      ))}
+      <CookieConsent />
     </div>
   )
 }
