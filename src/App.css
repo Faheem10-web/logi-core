@@ -210,7 +210,7 @@ textarea:focus-visible {
   position: fixed;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate3d(-50%, 0, 0);
   z-index: 9999;
   width: 100%;
   max-width: 1020px;
@@ -218,20 +218,9 @@ textarea:focus-visible {
   margin-top: 0;
   display: flex;
   justify-content: center;
-  transition: all 0.35s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
   pointer-events: auto;
-  animation: navFadeDown 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes navFadeDown {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -30px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  will-change: transform;
 }
 
 /* Outer Border Container for Trapezoid Navbar */
@@ -339,21 +328,29 @@ textarea:focus-visible {
   font-size: 0.96rem;
   font-weight: 600;
   color: #cbd5e1;
-  text-decoration: none;
-  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 4px 0;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 6px 4px;
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.nav-link:focus,
+.nav-link:active {
   color: #ffffff;
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 .nav-link.active {
   color: #ffffff;
+  font-weight: 700;
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 .nav-link .active-arrow {

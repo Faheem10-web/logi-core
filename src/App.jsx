@@ -220,6 +220,11 @@ function App() {
     })
   }, [])
 
+  // Smart Scroll Detection (Hide on scroll down, reveal on scroll up)
+  const [scrollDirection, setScrollDirection] = useState('up')
+  const [isScrolled, setIsScrolled] = useState(false)
+  const lastScrollY = useRef(0)
+
   // Lenis Smooth Scroll Initialization (60FPS momentum scrolling)
   useEffect(() => {
     const lenis = new Lenis({
@@ -241,58 +246,55 @@ function App() {
 
     requestAnimationFrame(raf)
 
-    return () => {
-      lenis.destroy()
-      lenisRef.current = null
-    }
-  }, [])
+    // Synchronize Lenis scroll event with Navbar visibility states for smooth 60fps responsiveness
+    const handleScroll = (e) => {
+      const currentY = e?.scroll !== undefined ? e.scroll : window.scrollY
 
-  // Global helper to instantly reset scroll to top 0 across Window, Body, Document & Lenis
-  const scrollToTopGlobal = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true })
-    }
-    // Backup micro-task reset to prevent any Lenis frame override
-    setTimeout(() => {
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-      if (lenisRef.current) {
-        lenisRef.current.scrollTo(0, { immediate: true })
-      }
-    }, 10)
-  }
-
-  // Smart Scroll Detection (Hide on scroll down, reveal on scroll up)
-  const [scrollDirection, setScrollDirection] = useState('up')
-  const [isScrolled, setIsScrolled] = useState(false)
-  const lastScrollY = useRef(0)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY
-      
       if (currentY > 40) {
         setIsScrolled(true)
       } else {
         setIsScrolled(false)
       }
 
-      if (currentY > lastScrollY.current && currentY > 100) {
+      const diff = currentY - lastScrollY.current
+      if (currentY > 120 && diff > 6) {
         setScrollDirection('down')
-      } else if (currentY < lastScrollY.current) {
+      } else if (diff < -6 || currentY < 80) {
         setScrollDirection('up')
       }
 
       lastScrollY.current = currentY
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    lenis.on('scroll', handleScroll)
+
+    return () => {
+      lenis.destroy()
+      lenisRef.current = null
+    }
   }, [])
+
+  // Global helper to smoothly scroll to top 0 across Window, Body, Document & Lenis
+  const scrollToTopGlobal = (smooth = true) => {
+    if (smooth && lenisRef.current) {
+      lenisRef.current.scrollTo(0, { duration: 0.8 })
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true })
+      }
+      setTimeout(() => {
+        window.scrollTo(0, 0)
+        document.documentElement.scrollTop = 0
+        document.body.scrollTop = 0
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(0, { immediate: true })
+        }
+      }, 10)
+    }
+  }
 
   // Lock body scroll when mobile menu drawer is open
   useEffect(() => {
@@ -323,15 +325,15 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  // Global automatic scroll-to-top on route / page navigation change
-  useEffect(() => {
-    scrollToTopGlobal()
-  }, [activeNav])
-
+  // Navigation click handler with smooth scroll
   const handleNavClick = (item) => {
-    setActiveNav(item)
+    if (activeNav === item) {
+      scrollToTopGlobal(true)
+    } else {
+      setActiveNav(item)
+      scrollToTopGlobal(false)
+    }
     setMobileMenuOpen(false)
-    scrollToTopGlobal()
   }
 
   const testimonials = [
@@ -392,7 +394,7 @@ function App() {
                       handleNavClick(item)
                     }}
                   >
-                    {item}
+                    <span>{item}</span>
                   </a>
                 </li>
               ))}
