@@ -164,17 +164,24 @@ function App() {
     return baseUrl.includes('?') ? `${baseUrl}&v=${lastUpdateTs}` : `${baseUrl}?v=${lastUpdateTs}`
   }
 
-  // Fetch live website JSON data from server API with no-store headers
+  // Fetch live website JSON data from server API with no-store headers & cache busting
   const fetchLiveSiteData = async () => {
     try {
       const ts = Date.now()
+      const fetchOpts = {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      }
       const [hRes, aRes, sRes, tRes, cRes, setRes] = await Promise.all([
-        fetch(`/api/hero?t=${ts}`, { cache: 'no-store' }),
-        fetch(`/api/about?t=${ts}`, { cache: 'no-store' }),
-        fetch(`/api/services?t=${ts}`, { cache: 'no-store' }),
-        fetch(`/api/testimonials?t=${ts}`, { cache: 'no-store' }),
-        fetch(`/api/contact?t=${ts}`, { cache: 'no-store' }),
-        fetch(`/api/settings?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/hero?_t=${ts}`, fetchOpts),
+        fetch(`/api/about?_t=${ts}`, fetchOpts),
+        fetch(`/api/services?_t=${ts}`, fetchOpts),
+        fetch(`/api/testimonials?_t=${ts}`, fetchOpts),
+        fetch(`/api/contact?_t=${ts}`, fetchOpts),
+        fetch(`/api/settings?_t=${ts}`, fetchOpts),
       ])
       if (hRes.ok) setSiteHero(await hRes.json())
       if (aRes.ok) setSiteAbout(await aRes.json())
@@ -191,6 +198,15 @@ function App() {
 
   useEffect(() => {
     fetchLiveSiteData()
+
+    // BFCache (Page Show) event listener: ensures fresh data on browser back/forward navigation
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        fetchLiveSiteData()
+      }
+    }
+    window.addEventListener('pageshow', handlePageShow)
+    return () => window.removeEventListener('pageshow', handlePageShow)
   }, [])
 
   const toggleFooterCol = (col) => {
