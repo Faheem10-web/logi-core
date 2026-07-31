@@ -377,7 +377,7 @@ function App() {
   // Shared Header Component with Right Slide-out Mobile Drawer & Morphing Hamburger
   const renderHeader = () => (
     <>
-      <header className={`header-wrapper ${isScrolled ? 'is-scrolled' : ''} ${scrollDirection === 'down' && !mobileMenuOpen ? 'scroll-hidden' : ''}`}>
+      <header className={`header-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="navbar-border-wrapper">
           <nav className="navbar" aria-label="Main Navigation">
             {/* LOGICORE Brand */}

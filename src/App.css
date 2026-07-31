@@ -205,16 +205,16 @@ textarea:focus-visible {
   pointer-events: none;
 }
 
-/* Header Outer Wrapper - Fixed at Top */
+/* Header Outer Wrapper - Full Width Fixed at Top */
 .header-wrapper {
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translate3d(-50%, 0, 0);
+  left: 0;
+  transform: none;
   z-index: 9999;
   width: 100%;
-  max-width: 1020px;
-  padding: 0 16px;
+  max-width: 100vw;
+  padding: 0;
   margin-top: 0;
   display: flex;
   justify-content: center;
@@ -223,56 +223,42 @@ textarea:focus-visible {
   will-change: transform;
 }
 
-/* Outer Border Container for Trapezoid Navbar */
+/* Outer Container for Full Width Navbar */
 .navbar-border-wrapper {
   width: 100%;
-  padding: 0 1px 1px 1px; /* 0px top padding for 100% flush top 0 */
+  padding: 0;
   margin-top: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.32) 0%,
-    rgba(255, 255, 255, 0.18) 100%
-  );
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    calc(100% - 30px) 100%,
-    30px 100%
-  );
-  border-radius: 0 0 22px 22px;
-  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.75));
+  background: transparent;
+  clip-path: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  filter: none;
 }
 
-/* Taller Floating Navbar */
+/* Full Width Top Navbar */
 .navbar {
   width: 100%;
-  height: 66px;
-  background-color: rgba(22, 24, 27, 0.88);
+  height: 70px;
+  background-color: rgba(12, 18, 28, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px 0 34px;
-  
-  /* Inverted Trapezoid Slanted Ends */
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    calc(100% - 30px) 100%,
-    30px 100%
-  );
-  border-radius: 0 0 22px 22px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+  padding: 0 40px;
+  clip-path: none;
+  border-radius: 0;
+  box-shadow: none !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Sticky Scrolled Navbar State */
 .header-wrapper.is-scrolled .navbar {
-  background-color: rgba(10, 16, 26, 0.94);
+  background-color: rgba(7, 12, 22, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
+  box-shadow: none !important;
+  height: 66px;
 }
 
 /* Brand Title */
@@ -309,11 +295,11 @@ textarea:focus-visible {
   display: block;
 }
 
-/* Nav Links */
+/* Nav Links - Centered Layout */
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 38px;
+  gap: 42px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -325,7 +311,7 @@ textarea:focus-visible {
 
 .nav-link {
   position: relative;
-  font-size: 0.96rem;
+  font-size: 0.98rem;
   font-weight: 600;
   color: #cbd5e1;
   text-decoration: none !important;
@@ -359,7 +345,7 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
-/* CTA Wrapper & Slanted Button */
+/* CTA Wrapper & Slanted High Contrast Button */
 .cta-wrapper {
   display: flex;
   align-items: center;
@@ -370,28 +356,23 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 52px;
-  padding: 0 26px;
-  background: #d4dadf;
+  height: 44px;
+  padding: 0 24px;
+  background: #ffffff;
   color: #0f172a;
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 700;
   text-decoration: none;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    calc(100% - 20px) 100%,
-    0 100%
-  );
+  clip-path: none;
+  transition: all 0.25s ease;
 }
 
 .cta-button:hover {
-  background: #0066FF;
-  color: #ffffff;
+  background: #ffffff;
+  color: #0066FF;
   transform: translateY(-1px);
 }
 
@@ -455,9 +436,9 @@ textarea:focus-visible {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Smart Hide on Scroll Down / Reveal on Scroll Up */
+/* Permanently Fixed Header at Top (Never hides on scroll) */
 .header-wrapper.scroll-hidden {
-  transform: translate3d(-50%, -120%, 0) !important;
+  transform: none !important;
 }
 
 /* Backdrop Blur Overlay for Centered Mobile Dropdown */
@@ -633,7 +614,7 @@ textarea:focus-visible {
   }
 
   .header-wrapper.scroll-hidden {
-    transform: translate3d(0, -120%, 0) !important;
+    transform: none !important;
   }
 
   .navbar-border-wrapper {
@@ -2346,7 +2327,7 @@ textarea:focus-visible {
   flex-direction: row-reverse;
 }
 
-/* Image Column with Inverted Chamfer Corner Cut - 100% Image 2 Matching */
+/* Image Column with Standard Box Level Corners */
 .service-split-image-wrapper {
   flex: 1;
   height: 350px;
@@ -2354,25 +2335,12 @@ textarea:focus-visible {
   overflow: hidden;
   box-shadow: none;
   position: relative;
-  /* Top-Right Chamfer Cut for left images (01 & 03) */
-  clip-path: polygon(
-    0 0,
-    calc(100% - 50px) 0,
-    100% 50px,
-    100% 100%,
-    0 100%
-  );
+  clip-path: none;
 }
 
-/* Reverse Item Right Image with Top-Left Chamfer Cut (02) */
+/* Reverse Item Right Image */
 .service-split-item.reverse-layout .service-split-image-wrapper {
-  clip-path: polygon(
-    50px 0,
-    100% 0,
-    100% 100%,
-    0 100%,
-    0 50px
-  );
+  clip-path: none;
 }
 
 .service-split-img {
@@ -2433,7 +2401,7 @@ textarea:focus-visible {
   transform: translateX(2px);
 }
 
-/* Dark Teal Content Card matching Image 2 */
+/* Standard Box Level Content Card */
 .service-split-card {
   flex: 1;
   height: 350px;
@@ -2450,25 +2418,12 @@ textarea:focus-visible {
   flex-direction: column;
   justify-content: space-between;
   transition: background-color 0.35s ease;
-  /* Top-Left Chamfer Cut for right cards (01 & 03) */
-  clip-path: polygon(
-    50px 0,
-    100% 0,
-    100% 100%,
-    0 100%,
-    0 50px
-  );
+  clip-path: none;
 }
 
-/* Reverse Item Left Card with Top-Right Chamfer Cut (02) */
+/* Reverse Item Left Card */
 .service-split-item.reverse-layout .service-split-card {
-  clip-path: polygon(
-    0 0,
-    calc(100% - 50px) 0,
-    100% 50px,
-    100% 100%,
-    0 100%
-  );
+  clip-path: none;
 }
 
 .service-split-item:hover .service-split-card {
