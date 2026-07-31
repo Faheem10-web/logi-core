@@ -1145,7 +1145,7 @@ function App() {
               <div
                 className="hero-overlay"
                 style={{
-                  background: `linear-gradient(rgba(5, 12, 24, ${siteHero?.overlayOpacity ?? 0.65}), rgba(5, 12, 24, ${siteHero?.overlayOpacity ?? 0.65}))`,
+                  background: `linear-gradient(rgba(5, 12, 24, ${siteHero?.overlayOpacity ?? 0}), rgba(5, 12, 24, ${siteHero?.overlayOpacity ?? 0}))`,
                 }}
               />
 
