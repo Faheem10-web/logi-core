@@ -67,20 +67,38 @@ const upload = multer({
   },
 })
 
-// Helper to read JSON file
+// In-Memory Data Store Cache to ensure zero 500 errors on read-only environments
+const dataMemoryStore = {}
+
+// Helper to read JSON file safely
 const readJsonFile = (filename) => {
-  const filePath = path.join(dataDir, `${filename}.json`)
-  if (!fs.existsSync(filePath)) {
-    return null
+  if (dataMemoryStore[filename]) {
+    return dataMemoryStore[filename]
   }
-  const content = fs.readFileSync(filePath, 'utf8')
-  return JSON.parse(content)
+  try {
+    const filePath = path.join(dataDir, `${filename}.json`)
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8')
+      const parsed = JSON.parse(content)
+      dataMemoryStore[filename] = parsed
+      return parsed
+    }
+  } catch (err) {
+    console.error(`Error reading ${filename}.json:`, err)
+  }
+  return dataMemoryStore[filename] || null
 }
 
-// Helper to write JSON file
+// Helper to write JSON file safely
 const writeJsonFile = (filename, data) => {
-  const filePath = path.join(dataDir, `${filename}.json`)
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
+  dataMemoryStore[filename] = data
+  try {
+    const filePath = path.join(dataDir, `${filename}.json`)
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
+  } catch (err) {
+    console.warn(`Write to disk skipped for ${filename} (read-only filesystem or permissions):`, err.message)
+  }
+  return true
 }
 
 // JWT Authentication Middleware
