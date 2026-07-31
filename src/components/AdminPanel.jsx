@@ -74,13 +74,14 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
   const fetchAllData = async () => {
     setLoading(true)
     try {
+      const ts = Date.now()
       const [heroRes, aboutRes, servicesRes, testRes, contactRes, settingsRes] = await Promise.all([
-        fetch('/api/hero'),
-        fetch('/api/about'),
-        fetch('/api/services'),
-        fetch('/api/testimonials'),
-        fetch('/api/contact'),
-        fetch('/api/settings'),
+        fetch(`/api/hero?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/about?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/services?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/testimonials?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/contact?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/settings?t=${ts}`, { cache: 'no-store' }),
       ])
 
       if (heroRes.ok) setHeroData(await heroRes.json())

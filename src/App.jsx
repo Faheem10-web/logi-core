@@ -16,11 +16,11 @@ import { AdminPanel } from './components/AdminPanel'
 import { CookieConsent } from './components/common/CookieConsent'
 
 
-// High Performance Count-Up Animated Number Component
+// High Performance Count-Up Animated Number Component (Repeated animation on scroll)
 function CounterNumber({ end, prefix = '', suffix = '', decimals = 0, duration = 1800 }) {
   const [count, setCount] = useState(0)
-  const [hasAnimated, setHasAnimated] = useState(false)
   const ref = useRef(null)
+  const animRef = useRef(null)
 
   useEffect(() => {
     const element = ref.current
@@ -28,8 +28,7 @@ function CounterNumber({ end, prefix = '', suffix = '', decimals = 0, duration =
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true)
+        if (entry.isIntersecting) {
           let startTime = null
           const startValue = 0
 
@@ -42,11 +41,14 @@ function CounterNumber({ end, prefix = '', suffix = '', decimals = 0, duration =
             setCount(currentVal)
 
             if (progress < 1) {
-              requestAnimationFrame(animate)
+              animRef.current = requestAnimationFrame(animate)
             }
           }
 
-          requestAnimationFrame(animate)
+          animRef.current = requestAnimationFrame(animate)
+        } else {
+          if (animRef.current) cancelAnimationFrame(animRef.current)
+          setCount(0)
         }
       },
       { threshold: 0.2 }
@@ -56,8 +58,9 @@ function CounterNumber({ end, prefix = '', suffix = '', decimals = 0, duration =
 
     return () => {
       if (element) observer.unobserve(element)
+      if (animRef.current) cancelAnimationFrame(animRef.current)
     }
-  }, [end, duration, hasAnimated])
+  }, [end, duration])
 
   const formattedCount = decimals > 0 ? count.toFixed(decimals) : Math.floor(count)
 
@@ -68,7 +71,7 @@ function CounterNumber({ end, prefix = '', suffix = '', decimals = 0, duration =
   )
 }
 
-// Reusable Scroll Reveal Observer Wrapper
+// Reusable Scroll Reveal Observer Wrapper (Repeated animation on scroll)
 function ScrollReveal({ children, className = '', delay = 0 }) {
   const [isRevealed, setIsRevealed] = useState(false)
   const ref = useRef(null)
@@ -81,7 +84,8 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsRevealed(true)
-          observer.unobserve(element)
+        } else {
+          setIsRevealed(false)
         }
       },
       { threshold: 0.12 }
@@ -98,7 +102,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
     <div
       ref={ref}
       className={`scroll-reveal-item ${isRevealed ? 'revealed' : ''} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+      style={{ transitionDelay: isRevealed ? `${delay}ms` : '0ms' }}
     >
       {children}
     </div>
@@ -106,7 +110,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 const heroImages = [
-  'https://i.pinimg.com/1200x/46/8b/a4/468ba4ca19822f901cf0fbb46b5c6141.jpg',
+  'https://res.cloudinary.com/ddluoarzr/image/upload/v1785520504/ChatGPT_Image_Jul_31_2026_11_24_45_PM_grbg0g.png',
   'https://i.pinimg.com/1200x/a3/f6/ac/a3f6acb5de01d7914c26292209872263.jpg',
   'https://i.pinimg.com/1200x/85/52/4c/85524cd181a0c5e3cabb9b04c5cd2a24.jpg',
 ]

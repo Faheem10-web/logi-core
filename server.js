@@ -70,13 +70,10 @@ const upload = multer({
 // In-Memory Data Store Cache to ensure zero 500 errors on read-only environments
 const dataMemoryStore = {}
 
-// Helper to read JSON file safely
+// Helper to read JSON file safely (always read fresh from disk first if available)
 const readJsonFile = (filename) => {
-  if (dataMemoryStore[filename]) {
-    return dataMemoryStore[filename]
-  }
+  const filePath = path.join(dataDir, `${filename}.json`)
   try {
-    const filePath = path.join(dataDir, `${filename}.json`)
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf8')
       const parsed = JSON.parse(content)
