@@ -12,7 +12,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
     images: ['', '', ''],
     heading: '',
     subtitle: '',
-    overlayOpacity: 0,
+    overlayOpacity: 0.35,
     imageDuration: 7,
   })
 
