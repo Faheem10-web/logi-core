@@ -164,24 +164,17 @@ function App() {
     return baseUrl.includes('?') ? `${baseUrl}&v=${lastUpdateTs}` : `${baseUrl}?v=${lastUpdateTs}`
   }
 
-  // Fetch live website JSON data from server API with no-store headers & cache busting
+  // Fetch live website JSON data from server API with no-store headers
   const fetchLiveSiteData = async () => {
     try {
       const ts = Date.now()
-      const fetchOpts = {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
-      }
       const [hRes, aRes, sRes, tRes, cRes, setRes] = await Promise.all([
-        fetch(`/api/hero?_t=${ts}`, fetchOpts),
-        fetch(`/api/about?_t=${ts}`, fetchOpts),
-        fetch(`/api/services?_t=${ts}`, fetchOpts),
-        fetch(`/api/testimonials?_t=${ts}`, fetchOpts),
-        fetch(`/api/contact?_t=${ts}`, fetchOpts),
-        fetch(`/api/settings?_t=${ts}`, fetchOpts),
+        fetch(`/api/hero?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/about?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/services?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/testimonials?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/contact?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/settings?t=${ts}`, { cache: 'no-store' }),
       ])
       if (hRes.ok) setSiteHero(await hRes.json())
       if (aRes.ok) setSiteAbout(await aRes.json())
@@ -198,15 +191,6 @@ function App() {
 
   useEffect(() => {
     fetchLiveSiteData()
-
-    // BFCache (Page Show) event listener: ensures fresh data on browser back/forward navigation
-    const handlePageShow = (event) => {
-      if (event.persisted) {
-        fetchLiveSiteData()
-      }
-    }
-    window.addEventListener('pageshow', handlePageShow)
-    return () => window.removeEventListener('pageshow', handlePageShow)
   }, [])
 
   const toggleFooterCol = (col) => {
@@ -219,22 +203,26 @@ function App() {
   const navItems = ['Home', 'About', 'Services', 'Contact']
   const lenisRef = useRef(null)
 
-  // Auto-play hero background image slider every 7 seconds
+  const activeHeroImages = (siteHero?.images || heroImages).filter((img) => img && typeof img === 'string' && img.trim() !== '')
+  const currentHeroImages = activeHeroImages.length > 0 ? activeHeroImages : heroImages
+
+  // Auto-play hero background image slider dynamically
   useEffect(() => {
+    const duration = (siteHero?.imageDuration || 7) * 1000
     const timer = setInterval(() => {
-      setHeroSlideIndex((prev) => (prev + 1) % heroImages.length)
-    }, 7000)
+      setHeroSlideIndex((prev) => (prev + 1) % currentHeroImages.length)
+    }, duration)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [siteHero, currentHeroImages.length])
 
-  // Preload hero images for zero flicker 60fps performance
+  // Preload hero images for zero flicker performance
   useEffect(() => {
-    heroImages.forEach((src) => {
+    currentHeroImages.forEach((src) => {
       const img = new Image()
       img.src = src
     })
-  }, [])
+  }, [currentHeroImages])
 
   // Smart Scroll Detection (Hide on scroll down, reveal on scroll up)
   const [scrollDirection, setScrollDirection] = useState('up')
@@ -1133,7 +1121,7 @@ function App() {
             <section className="hero-container">
               {/* Background Slider Container */}
               <div className="hero-slider-bg-wrapper">
-                {(siteHero?.images?.length ? siteHero.images : heroImages).map((imgUrl, idx) => (
+                {currentHeroImages.map((imgUrl, idx) => (
                   <div
                     key={`${imgUrl}-${idx}-${lastUpdateTs}`}
                     className={`hero-slide-bg ${idx === heroSlideIndex ? 'active' : ''}`}

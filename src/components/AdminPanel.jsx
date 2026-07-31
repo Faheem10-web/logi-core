@@ -97,9 +97,31 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
     }
   }
 
+  // Verify token validity on AdminPanel mount
   useEffect(() => {
+    const verifyToken = async () => {
+      if (!token) {
+        if (onLogout) onLogout()
+        return
+      }
+      try {
+        const res = await fetch('/api/verify', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = await res.json()
+        if (!res.ok || !data.success) {
+          showToast('error', '⚠️ Session expired or invalid token. Please log in again.')
+          setTimeout(() => {
+            if (onLogout) onLogout()
+          }, 1200)
+        }
+      } catch (err) {
+        console.error('Token verification error:', err)
+      }
+    }
+    verifyToken()
     fetchAllData()
-  }, [])
+  }, [token])
 
   // Generic Save Handler
   const handleSaveSection = async (sectionName, payload) => {
@@ -121,7 +143,14 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
         }
         showToast('success', `✨ ${sectionName.toUpperCase()} saved successfully! Website updated instantly.`)
       } else {
-        showToast('error', data.message || `Failed to save ${sectionName}`)
+        if (res.status === 401 || res.status === 403 || data.message?.toLowerCase().includes('token')) {
+          showToast('error', '⚠️ Session expired or invalid token. Redirecting to login...')
+          setTimeout(() => {
+            if (onLogout) onLogout()
+          }, 1200)
+        } else {
+          showToast('error', data.message || `Failed to save ${sectionName}`)
+        }
       }
     } catch (err) {
       console.error(err)
@@ -264,6 +293,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                     setHeroData({ ...heroData, images: newImgs })
                   }}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
 
                 <ImageInputManager
@@ -275,6 +305,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                     setHeroData({ ...heroData, images: newImgs })
                   }}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
 
                 <ImageInputManager
@@ -286,6 +317,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                     setHeroData({ ...heroData, images: newImgs })
                   }}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
               </div>
 
@@ -365,6 +397,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={aboutData.bannerImage || ''}
                   onChange={(val) => setAboutData({ ...aboutData, bannerImage: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
 
                 <ImageInputManager
@@ -372,6 +405,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={aboutData.aboutImage || ''}
                   onChange={(val) => setAboutData({ ...aboutData, aboutImage: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
 
                 <ImageInputManager
@@ -379,6 +413,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={aboutData.detailImage || ''}
                   onChange={(val) => setAboutData({ ...aboutData, detailImage: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
               </div>
 
@@ -464,6 +499,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={servicesData.bannerImage || ''}
                   onChange={(val) => setServicesData({ ...servicesData, bannerImage: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
               </div>
 
@@ -480,6 +516,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                       setServicesData({ ...servicesData, services: updated })
                     }}
                     token={token}
+                    onTokenExpired={onLogout}
                   />
 
                   <div className="admin-form-group">
@@ -545,6 +582,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                       setTestimonialsData({ ...testimonialsData, testimonials: updated })
                     }}
                     token={token}
+                    onTokenExpired={onLogout}
                   />
 
                   <div className="admin-form-grid-2">
@@ -634,6 +672,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={contactData.bannerImage || ''}
                   onChange={(val) => setContactData({ ...contactData, bannerImage: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
               </div>
 
@@ -721,6 +760,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={settingsData.logo || ''}
                   onChange={(val) => setSettingsData({ ...settingsData, logo: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
 
                 <ImageInputManager
@@ -728,6 +768,7 @@ export function AdminPanel({ token, onLogout, onDataUpdated, onCloseAdmin }) {
                   value={settingsData.favicon || ''}
                   onChange={(val) => setSettingsData({ ...settingsData, favicon: val })}
                   token={token}
+                  onTokenExpired={onLogout}
                 />
               </div>
 

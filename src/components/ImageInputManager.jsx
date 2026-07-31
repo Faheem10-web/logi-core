@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-export function ImageInputManager({ label, value, onChange, token }) {
+export function ImageInputManager({ label, value, onChange, token, onTokenExpired }) {
   const [uploading, setUploading] = useState(false)
   const [mode, setMode] = useState('url') // 'url' or 'file'
   const [previewError, setPreviewError] = useState(false)
@@ -33,7 +33,12 @@ export function ImageInputManager({ label, value, onChange, token }) {
         onChange(cacheBustedUrl)
         setPreviewError(false)
       } else {
-        alert(data.message || 'Image upload failed!')
+        if (res.status === 401 || res.status === 403 || data.message?.toLowerCase().includes('token')) {
+          alert('⚠️ Session expired or invalid token. Please log in again.')
+          if (onTokenExpired) onTokenExpired()
+        } else {
+          alert(data.message || 'Image upload failed!')
+        }
       }
     } catch (err) {
       console.error(err)
